@@ -38,13 +38,9 @@ export const Ticket = sequelize.define('ticket', {
         type: DataTypes.STRING,
         allowNull: true
     },
-    idUserAsignado: {
-        type: DataTypes.INTEGER,
-        defaultValue: 1,
-        allowNull: false,
-        references: {
-            model: User,
-            key: 'id'
-        }
+    usuarioAsignado: {
+        type: DataTypes.STRING,
+        defaultValue: "NA",
+        allowNull: true,
     }
 }, )

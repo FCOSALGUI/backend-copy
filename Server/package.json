@@ -5,9 +5,9 @@
   "main": ".dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "ts": "tsc --watch",
     "compile": "tsc && nodemon dist/index.js",
-    "dev": "node_modules/nodemon/bin/nodemon.js -e ts  --exec \"npm run compile\""
+    "dev": "nodemon dist/index.js",
+    "ts": "tsc --watch"
   },
   "keywords": [],
   "author": "",

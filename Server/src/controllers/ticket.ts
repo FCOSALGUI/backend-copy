@@ -240,6 +240,52 @@ export const updateTicketPriority = async (req: Request, res: Response) => {
   }
 };
 
+export const updateTicketAssignee = async (req: Request, res: Response) => {
+  const { usuarioAsignado } = req.body;
+  const { id } = req.params;
+
+  const ticketSelected: any = await Ticket.findOne({ where: { id: id } }); //ticket que cambiara
+  const userTicket: any = await User.findOne({where: { id: ticketSelected.idUser },}); // usuario que creo el ticket
+  const admin: any = await User.findOne({ where: { username:usuarioAsignado}});//admin al que se le asigno el ticket
+
+  const emailAdmin = admin.email.toString()
+  const prueba = "," + userTicket.email;
+  const emails = emailAdmin.concat(prueba);
+  console.log(emails)
+
+  try {
+    // Guardamos usuario en la base de datos
+    await Ticket.update(
+      {
+        usuarioAsignado : usuarioAsignado,
+      },
+      {
+        where: { id: id },
+      }
+    );
+    const html: any =
+      "<p>Este correo es un aviso de que se ha asignado un administrador para que atienda el ticket con titulo <b>" +
+      ticketSelected.title +
+      "</b> el ticket sera atendido por el administrador <b>" +
+      admin.firstName +
+      "</b>. De ser necesario puede enviar al correo del administrador el cual es <b>" +
+      admin.email +
+      "</b> y telefono <b>" +
+      admin.telefono +
+      "</b>.<br><b>Servicio de notificaciones de Sistema de Tickets de Caritas</b></p>";
+    sentEmail(
+      "eliancruz99@gmail.com",
+      "Administrador asignado al ticket con titulo " + ticketSelected.title + "",
+      html
+    );
+  } catch (error) {
+    res.status(400).json({
+      msg: "Ha ocurrido un error",
+      error,
+    });
+  }
+};
+
 export const deleteTicket = async (req: Request, res: Response) => {
   const { id } = req.params;
   const idUser = await getId(req);

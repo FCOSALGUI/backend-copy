@@ -76,10 +76,19 @@ export const getUsers = async (req: Request, res: Response) => {
     res.json(listUsers);
 }
 
-export const getUserInfo = async (req: Request, res: Response) =>{
+export const getMyProfile = async (req: Request, res: Response) =>{
     const token:any = req.headers['authorization'];
     const decoded:any= jwt.decode(token.slice(7));
     const userExists:any = await User.findOne({ where: { username: decoded.username } }); 
+    res.json(userExists);
+}
+
+export const getUserById = async (req: Request, res: Response) => {
+    const {id} = req.params;
+    const userExists: any = await User.findOne({ 
+        attributes: ['firstName', 'lastName', 'departamento', 'telefono', 'email'],
+        where: { id: id } 
+    });
     res.json(userExists);
 }
 
@@ -129,3 +138,36 @@ export const editUserInfo = async (req: Request, res: Response) => {
       });
     }
   }
+  
+  export const deleteUser = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    //const idUser = await getId(req);
+
+    const UserFounded: any = await User.findOne({ where: { id: id } });
+  
+
+
+    /*
+    const userLogged: any = await User.findOne({ where: { id: idUser } });
+    const emailsAdmins = (await getAdminEmail(req)).toString();
+    const prueba = "," + userLogged.email;
+    const emails = emailsAdmins.concat(prueba);
+    */
+    
+    try {
+      // Eliminamos usuario en la base de datos
+      await User.destroy({
+        where: { id: id },
+      });
+  
+      res.json({
+        msg: `Usuario eliminado exitosamente!`,
+      });
+    } catch (error) {
+      res.status(400).json({
+        msg: "Ha ocurrido un error",
+        error,
+      });
+    }
+  };
+
