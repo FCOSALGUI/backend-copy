@@ -8,6 +8,7 @@ import {
   updateTicketPriority,
   updateTicketAssignee,
   deleteTicket,
+  updateTicketStatusUSER,
 } from "../controllers/ticket";
 import validateToken from "./validate-token";
 
@@ -18,6 +19,9 @@ router.get("/all", validateToken, getAllTickets);
 router.post("/create", validateToken, createTicket);
 router.put("/update/:id", validateToken, updateTicket);
 router.put("/updateStatus/:id", validateToken, updateTicketStatus);
+
+router.put("/updateStatusUSER/:id", validateToken, updateTicketStatusUSER);
+
 router.put("/updatePriority/:id", validateToken, updateTicketPriority);
 router.put("/updateAssignee/:id", validateToken, updateTicketAssignee);
 router.delete("/delete/:id", validateToken, deleteTicket);

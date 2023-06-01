@@ -49,7 +49,7 @@ export const getComments = async (req: Request, res: Response) => {
         });
           let info = await transporter.sendMail({
             from: 'ticketscaritas@gmail.com', // sender address
-            to: 'eliancruz99@gmail.com', // list of receivers
+            to: receiver, // list of receivers
             subject: "Ticket " + idTicket + " ha recibido un comentario de un usuario", // Subject line
             html: "<p>Este correo es un aviso de que se ha agregado un comentario al ticket con ID <b>" + idTicket + "</b> por parte del usuario <b>"+ name +"</b>. Con el correo asociado <b>"+ correo +"</b> y ID de usuario <b>"+ userId +"</b>.<br><br> Favor de revisar el ticket para proceder con el procedimiento requerido para el id de ticket específicado</p><p>Atentamente, <br><b>Servicio de notificaciones de Sistema de Tickets de Caritas</b></p>", // html body
           });

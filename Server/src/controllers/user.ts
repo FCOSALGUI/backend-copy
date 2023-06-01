@@ -27,6 +27,7 @@ export const newUser = async (req: Request, res: Response) => {
             tipo: tipo,
             departamento: departamento,
             telefono: telefono,
+            status: "activo",
             email:email
         });
 
@@ -58,11 +59,29 @@ export const loginUser = async (req: Request, res: Response) => {
     // Validamos Password
     const passwordValid = await bcrypt.compare(password, userExists.password);
     if(!passwordValid){
+      
+      if(userExists.status == "inactivo")
+      {
         return res.status(400).json({
-            msg: `Password Incorrecta`
-        });
+          msg: `No existe un usuario ${username} en la base de datos`
+      });
+      }
+      else{
+        return res.status(400).json({
+          msg: `Password Incorrecta`
+      });
+      }
+ 
     }
     
+    
+    if(userExists.status == "inactivo")
+    {
+      return res.status(400).json({
+        msg: `No existe un usuario ${username} en la base de datos`
+    });
+    }
+
     // Se genera un Token
     const token = jwt.sign({
         username: username
@@ -74,6 +93,11 @@ export const loginUser = async (req: Request, res: Response) => {
 export const getUsers = async (req: Request, res: Response) => {
     const listUsers = await User.findAll();
     res.json(listUsers);
+}
+
+export const getUsersActive = async (req: Request, res: Response) => {
+  const listUsers = await User.findAll({ where: { status:"activo" } });
+  res.json(listUsers);
 }
 
 export const getMyProfile = async (req: Request, res: Response) =>{
@@ -101,6 +125,15 @@ export const getUsernameById = async (req: Request, res: Response) => {
     res.json(username.username);
 }
 
+export const getDepartamentoById = async (req: Request, res: Response) => {
+    const {id} = req.params;
+    const departamento: any = await User.findOne({ 
+        attributes: ['departamento'],
+        where: { id: id }
+    });
+    res.json(departamento.departamento);
+}
+
 export const getType = async (req: Request,res:Response) => {
     const token:any = req.headers['authorization'];
     const decoded:any= jwt.decode(token.slice(7));
@@ -108,7 +141,7 @@ export const getType = async (req: Request,res:Response) => {
     res.json(userExists.tipo);
 }
 
-
+//user logged
 export const editUserInfo = async (req: Request, res: Response) => {
     const { username,firstName,lastName,telefono } = req.body;
     const token: any = req.headers["authorization"];
@@ -138,30 +171,51 @@ export const editUserInfo = async (req: Request, res: Response) => {
       });
     }
   }
+
+
+  //ADMIN EDIT
+  export const editUserInfoID = async (req: Request, res: Response) => {
+    const { username,firstName,lastName,telefono } = req.body;
+    const {id} = req.params;
+    try{ 
+        await User.update(
+            {
+            username: username,
+            firstName: firstName,
+            lastName: lastName,
+            telefono:telefono
+            },
+            {
+              where: { id: id},
+            }
+          );
+      res.json({
+        msg: `El usuario se ha modificado exitosamente!`,
+      });
+    } catch (error) {
+        console.log(error);
+      res.status(400).json({
+        msg: "Ha ocurrido un error",
+        error,
+      });
+    }
+  }
   
   export const deleteUser = async (req: Request, res: Response) => {
     const { id } = req.params;
-    //const idUser = await getId(req);
-
-    const UserFounded: any = await User.findOne({ where: { id: id } });
-  
-
-
-    /*
-    const userLogged: any = await User.findOne({ where: { id: idUser } });
-    const emailsAdmins = (await getAdminEmail(req)).toString();
-    const prueba = "," + userLogged.email;
-    const emails = emailsAdmins.concat(prueba);
-    */
-    
     try {
       // Eliminamos usuario en la base de datos
-      await User.destroy({
-        where: { id: id },
-      });
+      await User.update(
+        {
+          status: "inactivo",
+        },
+        {
+          where: { id: id },
+        }
+      );
   
       res.json({
-        msg: `Usuario eliminado exitosamente!`,
+        msg: `Usuario deshabilitado exitosamente!`,
       });
     } catch (error) {
       res.status(400).json({

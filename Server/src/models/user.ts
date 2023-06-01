@@ -33,7 +33,7 @@ export const User = sequelize.define('user', {
     telefono: {
         type: DataTypes.STRING,
     },
-    fotografia: {
+    status: {
         type: DataTypes.STRING,
     },
     email: {

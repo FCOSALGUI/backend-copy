@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { Ticket } from "../models/ticket";
+import { Comment } from "../models/comment";
 import jwt from "jsonwebtoken";
 import { User } from "../models/user";
 import nodemailer from "nodemailer";
@@ -142,13 +143,14 @@ export const updateTicket = async (req: Request, res: Response) => {
 };
 
 export const updateTicketStatus = async (req: Request, res: Response) => {
-  const { status } = req.body;
+  const {status} = req.body;
   const { id } = req.params;
   const idLogged = await getId(req);
   const ticketSelected: any = await Ticket.findOne({ where: { id: id } });
   const userTicket: any = await User.findOne({
     where: { id: ticketSelected.idUser },
   });
+  console.log("golaaaaaaaaaaaaaaaaaaaa",status)
   const admin: any = await User.findOne({ where: { id: idLogged } });
   try {
     // Guardamos usuario en la base de datos
@@ -177,6 +179,43 @@ export const updateTicketStatus = async (req: Request, res: Response) => {
     sentEmail(
       userTicket.email,
       "Estatus cambiado en ticket de titulo " + ticketSelected.title + "",
+      html
+    );
+    res.json({
+      msg: `El status se ha modificado exitosamente!`,
+    });
+  } catch (error) {
+    res.status(400).json({
+      msg: "Ha ocurrido un error",
+      error,
+    });
+  }
+};
+
+//for user
+export const updateTicketStatusUSER = async (req: Request, res: Response) => {
+  const {status} = req.body;
+  const { id } = req.params;
+  const idLogged = await getId(req);
+  const ticketSelected: any = await Ticket.findOne({ where: { id: id } });
+  const userLogged: any = await User.findOne({ where: { id: idLogged } });
+  try {
+    // Guardamos usuario en la base de datos
+    await Ticket.update(
+      {
+        status: status,
+      },
+      {
+        where: { id: id },
+      }
+    );
+    const html: any =
+      "<p>Este correo es un aviso de que se ha archivado el ticket con titulo <b>" +
+      ticketSelected.title +
+      "</b>.<br><b>Servicio de notificaciones de Sistema de Tickets de Caritas</b></p>";
+    sentEmail(
+      userLogged.email,
+      "Ticket ha sido archivado con titulo " + ticketSelected.title + "",
       html
     );
     res.json({
@@ -274,7 +313,7 @@ export const updateTicketAssignee = async (req: Request, res: Response) => {
       admin.telefono +
       "</b>.<br><b>Servicio de notificaciones de Sistema de Tickets de Caritas</b></p>";
     sentEmail(
-      "eliancruz99@gmail.com",
+      emails,
       "Administrador asignado al ticket con titulo " + ticketSelected.title + "",
       html
     );
@@ -301,6 +340,11 @@ export const deleteTicket = async (req: Request, res: Response) => {
   //emails
   try {
     // Eliminamos ticket en la base de datos
+    await Comment.destroy({
+      where: { idTicket:id },
+    });
+
+
     await Ticket.destroy({
       where: { id: id },
     });
